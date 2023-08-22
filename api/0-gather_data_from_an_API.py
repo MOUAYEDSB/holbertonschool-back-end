@@ -1,33 +1,22 @@
 #!/usr/bin/python3
+"""For a given employee ID, returns information about his/her
+   TODO list progress."""
 
 import requests
+from sys import argv
 
-def get_employee_todo_progress(employee_id):
-    base_url = "https://example.com/api"  # Replace with the actual API endpoint
-    employee_url = f"{base_url}/employees/{employee_id}"
-    todo_url = f"{base_url}/employees/{employee_id}/todo"
 
-    # Fetch employee information
-    response_employee = requests.get(employee_url)
-    response_todo = requests.get(todo_url)
-
-    if response_employee.status_code != 200 or response_todo.status_code != 200:
-        print("Error: Unable to fetch data from the API")
-        return
-
-    employee_data = response_employee.json()
-    todo_data = response_todo.json()
-
-    employee_name = employee_data.get("name")
-    done_tasks = sum(task.get("completed") for task in todo_data)
-    total_tasks = len(todo_data)
-
-    print(f"Employee {employee_name} is done with tasks ({done_tasks}/{total_tasks}):")
-
-    for task in todo_data:
-        if task.get("completed"):
-            print(f"\t{task.get('title')}")
-
-if __name__ == "__main__":
-    employee_id = int(input("Enter the employee ID: "))
-    get_employee_todo_progress(employee_id)
+if __name__ == '__main__':
+    user_page = requests.get(
+        "https://jsonplaceholder.typicode.com/users/{}".
+        format(argv[1])).json()
+    todo_page = requests.get(
+        "https://jsonplaceholder.typicode.com/todos?userId={}".
+        format(argv[1])).json()
+    titles = []
+    for task in todo_page:
+        if task.get('completed') is True:
+            titles.append(task.get('title'))
+    print("Employee {} is done with tasks({}/{}):".
+          format(user_page.get('name'), len(titles), len(todo_page)))
+    print("\n".join("\t {}".format(task) for task in titles))
